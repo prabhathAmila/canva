@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced A4 Overlay Card Studio - Pro Edition</title>
+    <link rel="icon" type="image/png" href="assets/imgs/logo.png">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+    <!-- STARTUP CANVAS SIZE MODAL -->
+    <div class="modal-overlay" id="sizeModal">
+        <div class="modal-card">
+            <h2>Define Canvas Size</h2>
+            <p>Select a preset workspace design format or enter custom dimensions in pixels.</p>
+            
+            <div class="preset-grid">
+                <div class="preset-item active" data-width="595" data-height="842">
+                    <i class="fa-solid fa-file-lines"></i>
+                    <div class="preset-details">
+                        <span class="preset-name">A4 Portrait</span>
+                        <span class="preset-dim">595 x 842 px</span>
+                    </div>
+                </div>
+                <div class="preset-item" data-width="842" data-height="595">
+                    <i class="fa-solid fa-file-lines" style="transform: rotate(90deg);"></i>
+                    <div class="preset-details">
+                        <span class="preset-name">A4 Landscape</span>
+                        <span class="preset-dim">842 x 595 px</span>
+                    </div>
+                </div>
+                <div class="preset-item" data-width="1080" data-height="1080">
+                    <i class="fa-solid fa-square"></i>
+                    <div class="preset-details">
+                        <span class="preset-name">Square Card</span>
+                        <span class="preset-dim">1080 x 1080 px</span>
+                    </div>
+                </div>
+                <div class="preset-item" data-width="600" data-height="900">
+                    <i class="fa-solid fa-address-card"></i>
+                    <div class="preset-details">
+                        <span class="preset-name">Standard Card</span>
+                        <span class="preset-dim">600 x 900 px</span>
+                    </div>
+                </div>
+                <div class="preset-item" data-width="1050" data-height="600">
+                    <i class="fa-solid fa-id-card"></i>
+                    <div class="preset-details">
+                        <span class="preset-name">Business Card</span>
+                        <span class="preset-dim">1050 x 600 px</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="custom-size-container">
+                <div class="custom-input-group">
+                    <label for="customWidthInput">Width (px)</label>
+                    <input type="number" id="customWidthInput" value="595" min="100" max="4000">
+                </div>
+                <div class="custom-input-group">
+                    <label for="customHeightInput">Height (px)</label>
+                    <input type="number" id="customHeightInput" value="842" min="100" max="4000">
+                </div>
+            </div>
+            
+            <button class="btn btn-purple" id="createDesignBtn" style="margin-top: 8px;">
+                Create Design
+            </button>
+        </div>
+    </div>
+
+    <!-- TOP MENUBAR / ACTION STRIPE -->
+    <div class="top-bar">
+        <div class="top-bar-left">
+            <div style="display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 16px; color: #8b3dff; margin-right: 12px; user-select: none;">
+                <img src="assets/imgs/logo.png" alt="CardStudio Logo" style="height: 24px; width: 24px; border-radius: 4px; object-fit: cover;">
+                <span>CardStudio</span>
+            </div>
+            
+            <!-- File Menu Dropdown -->
+            <div class="dropdown" id="fileMenuDropdown">
+                <button class="dropdown-trigger-btn" id="fileMenuBtn">
+                    File <i class="fa-solid fa-chevron-down" style="font-size: 9px; margin-left: 4px;"></i>
+                </button>
+                <div class="dropdown-content" id="fileMenuContent">
+                    <a href="#" id="menuNewDesignBtn"><i class="fa-solid fa-file-circle-plus" style="margin-right: 8px;"></i> New Design...</a>
+                    <a href="#" id="clearCanvas" class="danger"><i class="fa-solid fa-arrow-rotate-left" style="margin-right: 8px;"></i> Reset Canvas</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="top-bar-right">
+            <!-- Export / Download Button -->
+            <button class="btn btn-purple" id="downloadCanvas" style="width: auto; padding: 8px 16px; height: 36px; font-size: 12px;">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Export Image
+            </button>
+        </div>
+    </div>
+
+    <!-- MAIN CONTAINER WRAPPER -->
+    <div class="main-container">
+
+        <!-- NARROW TAB STRIP -->
+        <div class="tab-strip">
+            <div class="tab-item" data-tab="uploads" title="Uploads">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+                <span>Uploads</span>
+            </div>
+            <div class="tab-item active" data-tab="text" title="Text">
+                <div class="text-tab-icon">T</div>
+                <span>Text</span>
+            </div>
+            <div class="tab-item" data-tab="elements" title="Elements">
+                <i class="fa-solid fa-shapes"></i>
+                <span>Elements</span>
+            </div>
+            <div class="tab-item" data-tab="layers" title="Layers">
+                <i class="fa-solid fa-layer-group"></i>
+                <span>Layers</span>
+            </div>
+        </div>
+
+    <!-- TAB PANEL (COLLAPSIBLE SECONDARY SIDEBAR) -->
+    <div class="tab-panel-container" id="tabPanelContainer">
+        <!-- Collapse Button -->
+        <button class="collapse-panel-btn" id="collapsePanelBtn" title="Collapse panel">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
+        <!-- UPLOADS PANEL -->
+        <div class="tab-panel" id="panel-uploads">
+            <div class="panel-header">Uploads</div>
+            <div class="panel-content">
+                <div class="section-title">Upload Media</div>
+                <div class="control-block">
+                    <label class="btn btn-purple" style="margin-bottom: 12px; cursor: pointer;">
+                        <i class="fa-solid fa-image"></i> Upload Image
+                        <input type="file" id="imageUploadInput" accept="image/*">
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- TEXT PANEL -->
+        <div class="tab-panel active" id="panel-text">
+            <div class="panel-header">Text</div>
+            <div class="panel-content">
+                <!-- Add Text Button (Big Purple Canva Style) -->
+                <button class="btn btn-purple" id="addTextBoxBtn" style="margin-bottom: 20px;">
+                    <i class="fa-solid fa-plus"></i> Add a text box
+                </button>
+
+                <!-- Predefined Styles (Canva Style) -->
+                <div class="section-title">Default text styles</div>
+                <div class="predefined-styles">
+                    <button class="predefined-style-btn heading" id="addHeadingBtn">
+                        Add a heading
+                    </button>
+                    <button class="predefined-style-btn subheading" id="addSubheadingBtn">
+                        Add a subheading
+                    </button>
+                    <button class="predefined-style-btn bodytext" id="addBodyTextBtn">
+                        Add a little bit of body text
+                    </button>
+                </div>
+
+
+            </div>
+        </div>
+
+        <!-- ELEMENTS PANEL -->
+        <div class="tab-panel" id="panel-elements">
+            <div class="panel-header">Elements</div>
+            <div class="panel-content" style="gap: 16px;">
+                <!-- Basic Shapes -->
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span class="category-title" style="font-size: 12px; font-weight: 700; color: #495057;">Basic shapes</span>
+                        <span style="font-size: 11px; color: #8b3dff; cursor: pointer; font-weight: 600;">See all</span>
+                    </div>
+                    <div class="shapes-grid">
+                        <div class="shape-item" data-shape="square" title="Square">
+                            <svg viewBox="0 0 100 100"><rect x="10" y="10" width="80" height="80" rx="0" ry="0" /></svg>
+                        </div>
+                        <div class="shape-item" data-shape="rounded-square" title="Rounded Square">
+                            <svg viewBox="0 0 100 100"><rect x="10" y="10" width="80" height="80" rx="15" ry="15" /></svg>
+                        </div>
+                        <div class="shape-item" data-shape="circle" title="Circle">
+                            <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" /></svg>
+                        </div>
+                        <div class="shape-item" data-shape="triangle" title="Triangle">
+                            <svg viewBox="0 0 100 100"><polygon points="50,12 90,88 10,88" /></svg>
+                        </div>
+                        <div class="shape-item" data-shape="right-triangle" title="Right Triangle">
+                            <svg viewBox="0 0 100 100"><polygon points="15,15 85,85 15,85" /></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Polygons -->
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span class="category-title" style="font-size: 12px; font-weight: 700; color: #495057;">Polygons</span>
+                        <span style="font-size: 11px; color: #8b3dff; cursor: pointer; font-weight: 600;">See all</span>
+                    </div>
+                    <div class="shapes-grid">
+                        <div class="shape-item" data-shape="pentagon" title="Pentagon">
+                            <svg viewBox="0 0 100 100"><polygon points="50,10 90,40 75,90 25,90 10,40" /></svg>
+                        </div>
+                        <div class="shape-item" data-shape="hexagon" title="Hexagon">
+                            <svg viewBox="0 0 100 100"><polygon points="50,10 88,32 88,78 50,90 12,78 12,32" /></svg>
+                        </div>
+                        <div class="shape-item" data-shape="octagon" title="Octagon">
+                            <svg viewBox="0 0 100 100"><polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" /></svg>
+                        </div>
+                        <div class="shape-item" data-shape="decagon" title="Decagon">
+                            <svg viewBox="0 0 100 100"><polygon points="50,10 75,18 90,38 90,62 75,82 50,90 25,82 10,62 10,38 25,18" /></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stars -->
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span class="category-title" style="font-size: 12px; font-weight: 700; color: #495057;">Stars</span>
+                        <span style="font-size: 11px; color: #8b3dff; cursor: pointer; font-weight: 600;">See all</span>
+                    </div>
+                    <div class="shapes-grid">
+                        <div class="shape-item" data-shape="star-4" title="4-Point Star">
+                            <svg viewBox="0 0 100 100"><polygon points="50,10 62,38 90,50 62,62 50,90 38,62 10,50 38,38" /></svg>
+                        </div>
+                        <div class="shape-item" data-shape="star-5" title="5-Point Star">
+                            <svg viewBox="0 0 100 100"><polygon points="50,10 63,38 93,38 69,57 78,87 50,70 22,87 31,57 7,38 37,38" /></svg>
+                        </div>
+                        <div class="shape-item" data-shape="star-6" title="6-Point Star">
+                            <svg viewBox="0 0 100 100"><polygon points="50,10 62,30 85,30 73,50 85,70 62,70 50,90 38,70 15,70 27,50 15,30 38,30" /></svg>
+                        </div>
+                        <div class="shape-item" data-shape="star-8" title="8-Point Star">
+                            <svg viewBox="0 0 100 100"><polygon points="50,10 59,35 83,23 71,47 90,62 65,65 62,90 47,71 23,83 35,59 10,50 35,41" /></svg>
+                        </div>
+                        <div class="shape-item" data-shape="star-12" title="Badge Star">
+                            <svg viewBox="0 0 100 100"><polygon points="50,10 57,22 70,18 72,31 85,33 81,46 90,54 81,62 85,75 72,77 70,90 57,86 50,98 43,86 30,90 28,77 15,75 19,62 10,54 19,46 15,33 28,31 30,18 43,22" /></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Arrows -->
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span class="category-title" style="font-size: 12px; font-weight: 700; color: #495057;">Arrows</span>
+                        <span style="font-size: 11px; color: #8b3dff; cursor: pointer; font-weight: 600;">See all</span>
+                    </div>
+                    <div class="shapes-grid">
+                        <div class="shape-item" data-shape="arrow-right" title="Right Arrow">
+                            <svg viewBox="0 0 100 100"><polygon points="10,35 60,35 60,15 90,50 60,85 60,65 10,65" /></svg>
+                        </div>
+                        <div class="shape-item" data-shape="arrow-left" title="Left Arrow">
+                            <svg viewBox="0 0 100 100"><polygon points="90,35 40,35 40,15 10,50 40,85 40,65 90,65" /></svg>
+                        </div>
+                        <div class="shape-item" data-shape="arrow-up" title="Up Arrow">
+                            <svg viewBox="0 0 100 100"><polygon points="35,90 35,40 15,40 50,10 85,40 65,40 65,90" /></svg>
+                        </div>
+                        <div class="shape-item" data-shape="arrow-down" title="Down Arrow">
+                            <svg viewBox="0 0 100 100"><polygon points="35,10 35,60 15,60 50,90 85,60 65,60 65,10" /></svg>
+                        </div>
+                        <div class="shape-item" data-shape="arrow-double" title="Double Arrow">
+                            <svg viewBox="0 0 100 100"><polygon points="35,35 65,35 65,15 95,50 65,85 65,65 35,65 35,85 5,50 35,15" /></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LAYERS & ARRANGE PANEL -->
+        <div class="tab-panel" id="panel-layers">
+            <div class="panel-header">Layers & Arrangement</div>
+            <div class="panel-content">
+                <div class="section-title">Arrange Layers</div>
+                <div class="control-block">
+                    <div class="align-group" style="margin-bottom: 20px;">
+                        <button class="layer-btn" id="bringToFront" title="Bring to Front" disabled>
+                            <i class="fa-solid fa-angles-up"></i>
+                        </button>
+                        <button class="layer-btn" id="bringForward" title="Bring Forward" disabled>
+                            <i class="fa-solid fa-angle-up"></i>
+                        </button>
+                        <button class="layer-btn" id="sendBackward" title="Send Backward" disabled>
+                            <i class="fa-solid fa-angle-down"></i>
+                        </button>
+                        <button class="layer-btn" id="sendToBack" title="Send to Back" disabled>
+                            <i class="fa-solid fa-angles-down"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="section-divider"></div>
+
+                <div class="section-title">Selection Control</div>
+                <div class="control-block" style="display: flex; gap: 8px; flex-direction: row;">
+                    <button class="btn btn-purple" id="sidebarLockBtn" disabled style="flex: 1; font-size: 11px; padding: 8px 10px; height: 36px; white-space: nowrap;"><i class="fa-solid fa-lock-open"></i> Lock Layer</button>
+                    <button class="btn btn-warning" id="deleteSelected" disabled style="flex: 1; font-size: 11px; padding: 8px 10px; height: 36px; white-space: nowrap; margin-top: 0;"><i class="fa-solid fa-trash-can"></i> Delete Selection</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="workspace-viewport">
+        <div class="text-toolbar" id="textToolbar">
+            <!-- Font Family Selector -->
+            <div class="toolbar-item">
+                <select id="tbFontFamilySelect" style="width: 130px; padding: 6px 8px; font-size: 12px; height: 32px; border-radius: 4px; outline: none; border: 1px solid #ced4da;">
+                    <option value="Arial">Standard Arial</option>
+                </select>
+            </div>
+            
+            <div class="toolbar-divider"></div>
+            
+            <!-- Font Size & Line Height -->
+            <div class="toolbar-item" style="display: flex; gap: 4px; align-items: center;">
+                <i class="fa-solid fa-text-height" style="font-size: 11px; color: #868e96;" title="Font Size"></i>
+                <input type="number" id="tbFontSizeInput" value="36" min="1" max="500" style="width: 55px; padding: 6px 6px; font-size: 12px; height: 32px; border-radius: 4px; outline: none; border: 1px solid #ced4da;">
+            </div>
+            
+            <div class="toolbar-item" style="display: flex; gap: 4px; align-items: center;">
+                <i class="fa-solid fa-arrows-up-down" style="font-size: 11px; color: #868e96;" title="Line Height"></i>
+                <input type="number" id="tbLineHeightInput" value="1.1" min="0.1" max="10" step="0.1" style="width: 50px; padding: 6px 6px; font-size: 12px; height: 32px; border-radius: 4px; outline: none; border: 1px solid #ced4da;">
+            </div>
+
+            <div class="toolbar-divider"></div>
+
+            <!-- Color Picker -->
+            <div class="toolbar-item" style="display: flex; gap: 4px; align-items: center;">
+                <input type="color" id="tbTextColorPicker" value="#2c3e50" style="width: 24px; height: 24px; border-radius: 4px; border: 1px solid #ced4da; cursor: pointer;">
+                <input type="text" id="tbTextColorHex" value="#2C3E50" placeholder="#000" style="width: 65px; padding: 6px 6px; font-size: 12px; height: 32px; text-transform: uppercase; border-radius: 4px; outline: none; border: 1px solid #ced4da;">
+            </div>
+
+            <div class="toolbar-divider"></div>
+
+            <!-- Style Buttons -->
+            <div class="toolbar-item align-group" style="gap: 2px;">
+                <button class="style-btn" id="tbBtnBold" title="Bold" style="padding: 6px 8px; height: 32px; border-radius: 4px; font-size: 11px; width: 32px; min-width: 32px;"><i class="fa-solid fa-bold"></i></button>
+                <button class="style-btn" id="tbBtnItalic" title="Italic" style="padding: 6px 8px; height: 32px; border-radius: 4px; font-size: 11px; width: 32px; min-width: 32px;"><i class="fa-solid fa-italic"></i></button>
+                <button class="style-btn" id="tbBtnUnderline" title="Underline" style="padding: 6px 8px; height: 32px; border-radius: 4px; font-size: 11px; width: 32px; min-width: 32px;"><i class="fa-solid fa-underline"></i></button>
+                <button class="style-btn" id="tbBtnStrike" title="Strikethrough" style="padding: 6px 8px; height: 32px; border-radius: 4px; font-size: 11px; width: 32px; min-width: 32px;"><i class="fa-solid fa-strikethrough"></i></button>
+                <button class="style-btn" id="tbBtnOverline" title="Overline" style="padding: 6px 8px; height: 32px; border-radius: 4px; font-size: 11px; width: 32px; min-width: 32px;"><i class="fa-solid fa-underline" style="transform: rotate(180deg); display: inline-block;"></i></button>
+            </div>
+
+            <div class="toolbar-divider"></div>
+
+            <!-- Alignment Buttons -->
+            <div class="toolbar-item align-group" style="gap: 2px;">
+                <button class="align-btn active" id="tbBtnAlignLeft" data-align="left" style="padding: 6px 8px; height: 32px; border-radius: 4px; font-size: 11px; width: 32px; min-width: 32px;"><i class="fa-solid fa-align-left"></i></button>
+                <button class="align-btn" id="tbBtnAlignCenter" data-align="center" style="padding: 6px 8px; height: 32px; border-radius: 4px; font-size: 11px; width: 32px; min-width: 32px;"><i class="fa-solid fa-align-center"></i></button>
+                <button class="align-btn" id="tbBtnAlignRight" data-align="right" style="padding: 6px 8px; height: 32px; border-radius: 4px; font-size: 11px; width: 32px; min-width: 32px;"><i class="fa-solid fa-align-right"></i></button>
+            </div>
+
+            <div class="toolbar-divider"></div>
+
+            <!-- Lock Button -->
+            <div class="toolbar-item">
+                <button class="style-btn" id="tbBtnLock" title="Lock Text" style="padding: 6px 8px; height: 32px; border-radius: 4px; font-size: 11px; width: 32px; min-width: 32px;"><i class="fa-solid fa-lock-open"></i></button>
+            </div>
+        </div>
+
+        <!-- FLOATING ELEMENT PROPERTIES TOOLBAR -->
+        <div class="text-toolbar" id="elementToolbar">
+            <!-- Element Fill Color -->
+            <div class="toolbar-item" id="elFillColorContainer" style="display: flex; gap: 4px; align-items: center;" title="Fill Color">
+                <i class="fa-solid fa-fill-drip" style="font-size: 11px; color: #868e96;"></i>
+                <input type="color" id="elFillColorPicker" value="#111111" style="width: 24px; height: 24px; border-radius: 4px; border: 1px solid #ced4da; cursor: pointer;">
+                <input type="text" id="elFillColorHex" value="#111111" placeholder="#000" style="width: 65px; padding: 6px 6px; font-size: 12px; height: 32px; text-transform: uppercase; border-radius: 4px; outline: none; border: 1px solid #ced4da;">
+            </div>
+            
+            <div class="toolbar-divider" id="elFillColorDivider"></div>
+            
+            <!-- Opacity Slider -->
+            <div class="toolbar-item" style="display: flex; gap: 6px; align-items: center;" title="Transparency">
+                <i class="fa-solid fa-circle-half-stroke" style="font-size: 11px; color: #868e96;"></i>
+                <input type="range" id="elOpacitySlider" min="0" max="100" value="100" style="width: 80px; height: 4px; cursor: pointer; accent-color: #8b3dff;">
+                <span id="elOpacityVal" style="font-size: 11px; color: #495057; min-width: 28px; text-align: right;">100%</span>
+            </div>
+            
+            <div class="toolbar-divider"></div>
+            
+            <!-- Corner Radius Slider (Rectangle Only) -->
+            <div class="toolbar-item" id="elCornerRadiusContainer" style="display: flex; gap: 6px; align-items: center;" title="Corner Radius">
+                <i class="fa-solid fa-circle-notch" style="font-size: 11px; color: #868e96;"></i>
+                <input type="range" id="elCornerRadiusSlider" min="0" max="60" value="0" style="width: 80px; height: 4px; cursor: pointer; accent-color: #8b3dff;">
+                <span id="elCornerRadiusVal" style="font-size: 11px; color: #495057; min-width: 28px; text-align: right;">0px</span>
+            </div>
+            
+            <div class="toolbar-divider" id="elCornerRadiusDivider"></div>
+
+            <!-- Stroke Width (Line Size) -->
+            <div class="toolbar-item" style="display: flex; gap: 4px; align-items: center;" title="Line Size">
+                <i class="fa-solid fa-border-top-left" style="font-size: 11px; color: #868e96;"></i>
+                <input type="number" id="elStrokeWidthInput" value="0" min="0" max="50" style="width: 45px; padding: 6px 6px; font-size: 12px; height: 32px; border-radius: 4px; outline: none; border: 1px solid #ced4da;">
+            </div>
+            
+            <div class="toolbar-divider"></div>
+            
+            <!-- Stroke Color (Line Color) -->
+            <div class="toolbar-item" style="display: flex; gap: 4px; align-items: center;" title="Line Color">
+                <i class="fa-solid fa-pen-clip" style="font-size: 11px; color: #868e96;"></i>
+                <input type="color" id="elStrokeColorPicker" value="#000000" style="width: 24px; height: 24px; border-radius: 4px; border: 1px solid #ced4da; cursor: pointer;">
+                <input type="text" id="elStrokeColorHex" value="#000000" placeholder="#000" style="width: 65px; padding: 6px 6px; font-size: 12px; height: 32px; text-transform: uppercase; border-radius: 4px; outline: none; border: 1px solid #ced4da;">
+            </div>
+
+            <div class="toolbar-divider"></div>
+
+            <!-- Lock Button -->
+            <div class="toolbar-item">
+                <button class="style-btn" id="elBtnLock" title="Lock Element" style="padding: 6px 8px; height: 32px; border-radius: 4px; font-size: 11px; width: 32px; min-width: 32px;"><i class="fa-solid fa-lock-open"></i></button>
+            </div>
+        </div>
+
+        <!-- Scrollable workspace content containing canvas only -->
+        <div class="workspace-scroll-area">
+            <div class="canvas-container-wrapper">
+                <canvas id="a4Canvas" width="595" height="842"></canvas>
+            </div>
+        </div>
+
+        <!-- CANVAS ZOOM SLIDER CONTROL -->
+        <div class="zoom-controls-wrapper">
+            <i class="fa-solid fa-magnifying-glass-minus" id="zoomOutBtn" title="Zoom Out" style="cursor: pointer; color: #868e96; font-size: 13px;"></i>
+            <input type="range" id="canvasZoomSlider" min="20" max="300" value="100" style="width: 100px; height: 4px; cursor: pointer; accent-color: #8b3dff;">
+            <i class="fa-solid fa-magnifying-glass-plus" id="zoomInBtn" title="Zoom In" style="cursor: pointer; color: #868e96; font-size: 13px;"></i>
+            <span id="canvasZoomVal" style="font-size: 12px; font-weight: 600; color: #495057; min-width: 38px; text-align: right; user-select: none;">100%</span>
+        </div>
+    </div>
+</div>
+
+    <!-- HIDDEN BACKING ELEMENTS FOR SIDEBAR COMPATIBILITY -->
+    <div style="display: none;">
+        <input type="text" id="textString" value="Edit Me!">
+        <button class="btn" id="addTextBtn"></button>
+        <select id="fontFamilySelect">
+            <option value="Arial">Standard Arial</option>
+        </select>
+        <input type="number" id="fontSizeInput" value="36">
+        <input type="number" id="lineHeightInput" value="1.1">
+        <input type="color" id="textColorPicker" value="#2c3e50">
+        <input type="text" id="textColorHex" value="#2c3e50">
+        <button class="style-btn" id="btnBold"></button>
+        <button class="style-btn" id="btnItalic"></button>
+        <button class="style-btn" id="btnUnderline"></button>
+        <button class="style-btn" id="btnStrike"></button>
+        <button class="style-btn" id="btnOverline"></button>
+        <button class="align-btn active" data-align="left"></button>
+        <button class="align-btn" data-align="center"></button>
+        <button class="align-btn" data-align="right"></button>
+    </div>
+
+    <!-- CUSTOM CONTEXT MENU -->
+    <div class="context-menu" id="customContextMenu">
+        <div class="context-menu-item" id="ctxBringToFront">
+            <i class="fa-solid fa-angles-up"></i> Bring to Front
+        </div>
+        <div class="context-menu-item" id="ctxBringForward">
+            <i class="fa-solid fa-angle-up"></i> Bring Forward
+        </div>
+        <div class="context-menu-item" id="ctxSendBackward">
+            <i class="fa-solid fa-angle-down"></i> Send Backward
+        </div>
+        <div class="context-menu-item" id="ctxSendToBack">
+            <i class="fa-solid fa-angles-down"></i> Send to Back
+        </div>
+        <div class="context-menu-divider"></div>
+        <div class="context-menu-item" id="ctxToggleLock">
+            <i class="fa-solid fa-lock-open"></i> Lock Layer
+        </div>
+        <div class="context-menu-divider"></div>
+        <div class="context-menu-item danger" id="ctxDelete">
+            <i class="fa-solid fa-trash-can"></i> Delete Layer
+        </div>
+    </div>
+
+    <script src="assets/js/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced A4 Overlay Card Studio</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        p {
+            color: #7f8c8d;
+            margin-top: 0;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .workspace {
+            display: flex;
+            gap: 25px;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        .sidebar {
+            flex: 0 0 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            border-right: 1px solid #e2e8f0;
+            padding-right: 25px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #34495e;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #7f8c8d;
+        }
+
+        .btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 15px;
+            font-size: 13px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            display: block;
+        }
+
+        .btn:hover { background-color: #2980b9; }
+        .btn:disabled { background-color: #bdc3c7; cursor: not-allowed; opacity: 0.6; }
+        .btn-success { background-color: #2ecc71; }
+        .btn-success:hover { background-color: #27ae60; }
+        .btn-danger { background-color: #e74c3c; }
+        .btn-danger:hover { background-color: #c0392b; }
+        .btn-warning { background-color: #f39c12; }
+        .btn-warning:hover { background-color: #d35400; }
+        .btn-purple { background-color: #9b59b6; }
+        .btn-purple:hover { background-color: #8e44ad; }
+
+        input[type="file"] { display: none; }
+
+        input[type="text"], select {
+            padding: 10px;
+            border: 1px solid #cccccc;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            width: 100%;
+            box-sizing: border-box;
+            background-color: #fff;
+        }
+
+        /* Added minor visual padding to option list for better font reading */
+        select option {
+            padding: 8px;
+            font-size: 16px; 
+        }
+
+        .align-group {
+            display: flex;
+            gap: 5px;
+        }
+
+        .align-btn {
+            flex: 1;
+            background-color: #f8f9fa;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #555;
+            transition: all 0.2s;
+        }
+
+        .align-btn:hover { background-color: #e9ecef; }
+        .align-btn.active {
+            background-color: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+
+        .canvas-area {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .canvas-container-wrapper {
+            border: 1px solid #bdc3c7;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            background: #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>A4 Overlay Card Studio</h1>
+    <p>Manage layers, imagery backgrounds, customized topography rules, and fonts cleanly via the integrated workspace matrix.</p>
+
+    <div class="workspace">
+        <div class="sidebar">
+            
+            <div>
+                <div class="section-title">1. Layer Management</div>
+                <div class="control-group" style="gap: 12px;">
+                    <label class="btn btn-success">
+                        <i class="fa-solid fa-layer-group"></i> Upload Front PNG (Overlay)
+                        <input type="file" id="frontImageInput" accept="image/png">
+                    </label>
+                    
+                    <label class="btn" style="opacity: 0.5;">
+                        <i class="fa-solid fa-image"></i> Upload Face Image
+                        <input type="file" id="faceImageInput" accept="image/*" disabled>
+                    </label>
+                </div>
+            </div>
+
+            <div>
+                <div class="section-title">2. Typography Engine</div>
+                <div class="control-group" style="gap: 12px;">
+                    <div>
+                        <label>Insert Custom Text</label>
+                        <div style="display: flex; gap: 5px; margin-top: 5px;">
+                            <input type="text" id="textString" value="Edit Me!">
+                            <button class="btn" id="addTextBtn" style="padding: 10px 15px;"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label>Google Font Engine</label>
+                        <select id="fontFamilySelect" style="margin-top: 5px;">
+                            <option value="Arial" style="font-family: Arial;">System Standard (Arial)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label>Horizontal Alignment</label>
+                        <div class="align-group" style="margin-top: 5px;">
+                            <button class="align-btn active" data-align="left"><i class="fa-solid fa-align-left"></i></button>
+                            <button class="align-btn" data-align="center"><i class="fa-solid fa-align-center"></i></button>
+                            <button class="align-btn" data-align="right"><i class="fa-solid fa-align-right"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: auto; display: flex; flex-direction: column; gap: 10px;">
+                <div class="section-title">3. Export Actions</div>
+                <button class="btn btn-warning" id="deleteSelected" disabled><i class="fa-solid fa-trash-can"></i> Delete Selection</button>
+                <button class="btn btn-purple" id="downloadCanvas" disabled><i class="fa-solid fa-cloud-arrow-down"></i> Download JPG</button>
+                <button class="btn btn-danger" id="clearCanvas"><i class="fa-solid fa-arrow-rotate-left"></i> Reset Studio</button>
+            </div>
+        </div>
+
+        <div class="canvas-area">
+            <div class="canvas-container-wrapper">
+                <canvas id="a4Canvas" width="595" height="842"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Fabric Canvas Frame Matrix
+        const canvas = new fabric.Canvas('a4Canvas', {
+            backgroundColor: '#ffffff',
+            preserveObjectStacking: true 
+        });
+
+        // DOM Handles
+        const frontImageInput = document.getElementById('frontImageInput');
+        const faceImageInput = document.getElementById('faceImageInput');
+        const deleteSelectedBtn = document.getElementById('deleteSelected');
+        const downloadCanvasBtn = document.getElementById('downloadCanvas');
+        const clearCanvasBtn = document.getElementById('clearCanvas');
+        
+        // Text Component DOM Elements 
+        const addTextBtn = document.getElementById('addTextBtn');
+        const textStringInput = document.getElementById('textString');
+        const fontFamilySelect = document.getElementById('fontFamilySelect');
+        const alignButtons = document.querySelectorAll('.align-group .align-btn');
+
+        let frontOverlayImage = null;
+
+        // Top Curated Trending Google Fonts 
+        const googleFontsList = [
+            "Poppins", "Roboto", "Montserrat", "Inter", "Open Sans", "Oswald", "Raleway", "Ubuntu", "Nunito", 
+            "Playfair Display", "Merriweather", "Lora", "PT Serif", "Cinzel", 
+            "Pacifico", "Lobster", "Dancing Script", "Great Vibes", "Caveat", "Satisfy", 
+            "Bebas Neue", "Anton", "Righteous", "Abril Fatface", "Permanent Marker", "Luckiest Guy", "Fredoka One", "Sacramento"
+        ];
+
+        // NEW: Load ALL fonts into the document head immediately so the dropdown can display them
+        function initFontDropdownWithPreviews() {
+            // Sort fonts alphabetically
+            googleFontsList.sort();
+
+            // Create a single grouped Google Fonts API call link for optimal performance
+            const formattedNames = googleFontsList.map(name => name.replace(/ /g, '+')).join('|');
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = `https://fonts.googleapis.com/css?family=${formattedNames}&display=swap`;
+            document.head.appendChild(link);
+
+            // Populate options and set each option's CSS inline font-family rule
+            googleFontsList.forEach(font => {
+                const option = document.createElement('option');
+                option.value = font;
+                option.textContent = font;
+                option.style.fontFamily = `"${font}", sans-serif`; // Force option text to use its own font
+                fontFamilySelect.appendChild(option);
+            });
+        }
+        initFontDropdownWithPreviews();
+
+        // Dynamically style the main select field to reflect the active selection's font styling
+        fontFamilySelect.addEventListener('change', function() {
+            this.style.fontFamily = `"${this.value}", sans-serif`;
+            
+            const activeObj = canvas.getActiveObject();
+            if (activeObj && activeObj.type === 'i-text') {
+                activeObj.set('fontFamily', this.value);
+                canvas.renderAll();
+            }
+        });
+
+        // Image Stream Handler Helper
+        function handleImageUpload(e, callback) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(event) { callback(event.target.result); };
+            reader.readAsDataURL(file);
+        }
+
+        // Upload Front Overlay Framework
+        frontImageInput.addEventListener('change', function(e) {
+            handleImageUpload(e, function(imgUrl) {
+                fabric.Image.fromURL(imgUrl, function(img) {
+                    img.set({
+                        originX: 'left', originY: 'top', left: 0, top: 0,
+                        scaleX: canvas.width / img.width, scaleY: canvas.height / img.height,
+                        selectable: false, evented: false, hasControls: false, hasBorders: false
+                    });
+                    if (frontOverlayImage) canvas.remove(frontOverlayImage);
+                    frontOverlayImage = img;
+                    canvas.add(img);
+                    img.bringToFront(); 
+                    canvas.renderAll();
+
+                    faceImageInput.disabled = false;
+                    faceImageInput.parentElement.style.opacity = "1";
+                    downloadCanvasBtn.disabled = false;
+                });
+            });
+        });
+
+        // Upload Target Face Image Layer Matrix
+        faceImageInput.addEventListener('change', function(e) {
+            handleImageUpload(e, function(imgUrl) {
+                fabric.Image.fromURL(imgUrl, function(img) {
+                    const scale = Math.min(canvas.width / img.width, canvas.height / img.height) * 0.6;
+                    img.set({
+                        left: canvas.width / 2, top: canvas.height / 2,
+                        originX: 'center', originY: 'center',
+                        scaleX: scale, scaleY: scale,
+                        selectable: true, evented: true,
+                        cornerColor: '#3498db', cornerSize: 14,
+                        transparentCorners: false, borderColor: '#3498db', cornerStyle: 'circle'
+                    });
+
+                    canvas.add(img);
+                    pushFaceBehindOverlay(img);
+                });
+            });
+        });
+
+        function pushFaceBehindOverlay(imgObj) {
+            if (frontOverlayImage) {
+                imgObj.moveTo(canvas.getObjects().indexOf(frontOverlayImage) - 1);
+                frontOverlayImage.bringToFront(); 
+            }
+            canvas.setActiveObject(imgObj); 
+            canvas.renderAll();
+        }
+
+        // --- TYPOGRAPHY TEXT CORE LOGIC ENGINE ---
+        addTextBtn.addEventListener('click', function() {
+            const userString = textStringInput.value;
+            const chosenFont = fontFamilySelect.value;
+            const activeAlign = document.querySelector('.align-group .align-btn.active').dataset.align;
+
+            const textItem = new fabric.IText(userString, {
+                left: canvas.width / 2,
+                top: canvas.height / 4,
+                originX: 'center',
+                originY: 'center',
+                fontFamily: chosenFont,
+                fontSize: 36,
+                fill: '#2c3e50',
+                textAlign: activeAlign,
+                cornerColor: '#3498db',
+                cornerSize: 12,
+                transparentCorners: false,
+                cornerStyle: 'circle'
+            });
+
+            canvas.add(textItem);
+            
+            if(frontOverlayImage) {
+                textItem.moveTo(canvas.getObjects().indexOf(frontOverlayImage) - 1);
+                frontOverlayImage.bringToFront();
+            }
+
+            canvas.setActiveObject(textItem);
+            canvas.renderAll();
+        });
+
+        // Handle Text Alignment Changes via Icon Library Bindings
+        alignButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                alignButtons.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+
+                const selectedAlignment = this.dataset.align;
+                const activeObj = canvas.getActiveObject();
+
+                if (activeObj && activeObj.type === 'i-text') {
+                    activeObj.set('textAlign', selectedAlignment);
+                    canvas.renderAll();
+                }
+            });
+        });
+
+        // Sync text panel variables dynamically when clicking existing items on canvas
+        canvas.on('selection:created', updateSidebarControlsFromCanvasSelection);
+        canvas.on('selection:updated', updateSidebarControlsFromCanvasSelection);
+        
+        function updateSidebarControlsFromCanvasSelection(e) {
+            const activeObj = canvas.getActiveObject();
+            if (activeObj && activeObj !== frontOverlayImage) {
+                deleteSelectedBtn.disabled = false;
+                
+                if(activeObj.type === 'i-text') {
+                    textStringInput.value = activeObj.text;
+                    fontFamilySelect.value = activeObj.fontFamily;
+                    fontFamilySelect.style.fontFamily = `"${activeObj.fontFamily}", sans-serif`;
+                    
+                    alignButtons.forEach(b => {
+                        b.classList.remove('active');
+                        if(b.dataset.align === activeObj.textAlign) b.classList.add('active');
+                    });
+                }
+            } else {
+                deleteSelectedBtn.disabled = true;
+            }
+        }
+
+        canvas.on('selection:cleared', function() {
+            deleteSelectedBtn.disabled = true;
+        });
+
+        // --- GLOBAL DELETE RUNTIME ACTIONS ---
+        function deleteActiveObject() {
+            const activeObject = canvas.getActiveObject();
+            if (activeObject && activeObject !== frontOverlayImage) {
+                canvas.remove(activeObject);
+                canvas.discardActiveObject();
+                canvas.requestRenderAll();
+                deleteSelectedBtn.disabled = true;
+            }
+        }
+
+        deleteSelectedBtn.addEventListener('click', deleteActiveObject);
+        window.addEventListener('keydown', function(e) {
+            if (e.key === 'Delete' || e.key === 'Backspace') {
+                if(document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'SELECT') {
+                    deleteActiveObject();
+                }
+            }
+        });
+
+        // --- EXPORT COMPILATION ROUTINE ---
+        downloadCanvasBtn.addEventListener('click', function() {
+            canvas.discardActiveObject();
+            canvas.requestRenderAll();
+
+            setTimeout(() => {
+                const dataURL = canvas.toDataURL({ format: 'jpeg', quality: 0.95 });
+                const downloadLink = document.createElement('a');
+                downloadLink.href = dataURL;
+                downloadLink.download = 'custom-a4-card.jpg';
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+            }, 50);
+        });
+
+        // Studio Reset Pipeline
+        clearCanvasBtn.addEventListener('click', function() {
+            canvas.clear();
+            canvas.setBackgroundColor('#ffffff', canvas.renderAll.bind(canvas));
+            frontOverlayImage = null;
+            frontImageInput.value = '';
+            faceImageInput.value = '';
+            faceImageInput.disabled = true;
+            downloadCanvasBtn.disabled = true;
+            deleteSelectedBtn.disabled = true;
+            fontFamilySelect.value = 'Arial';
+            fontFamilySelect.style.fontFamily = 'Arial';
+        });
+    </script>
+</body>
+</html>

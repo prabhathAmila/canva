@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A4 Overlay Canvas Customizer with Download</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        p {
+            color: #7f8c8d;
+            margin-top: 0;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-success {
+            background-color: #2ecc71;
+        }
+        .btn-success:hover {
+            background-color: #27ae60;
+        }
+
+        .btn-download {
+            background-color: #9b59b6;
+        }
+        .btn-download:hover {
+            background-color: #8e44ad;
+        }
+
+        .btn-danger {
+            background-color: #e74c3c;
+        }
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        /* Styling to look like an A4 Sheet of paper */
+        .canvas-container-wrapper {
+            border: 1px solid #bdc3c7;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            background: #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>A4 Overlay Customizer</h1>
+    <p>Upload a front PNG layout, layer a face image behind it, position it perfectly, and download the final result as a JPG.</p>
+
+    <div class="container">
+        <div class="controls">
+            <label class="btn btn-success">
+                1. Upload Front PNG (Overlay)
+                <input type="file" id="frontImageInput" accept="image/png">
+            </label>
+            
+            <label class="btn">
+                2. Upload Face Image (JPG/PNG)
+                <input type="file" id="faceImageInput" accept="image/*" disabled>
+            </label>
+
+            <button class="btn btn-download" id="downloadCanvas" disabled>3. Download JPG</button>
+
+            <button class="btn btn-danger" id="clearCanvas">Reset</button>
+        </div>
+
+        <div class="canvas-container-wrapper">
+            <canvas id="a4Canvas" width="595" height="842"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // 1. Initialize Fabric Canvas with a solid white background color
+        const canvas = new fabric.Canvas('a4Canvas', {
+            backgroundColor: '#ffffff',
+            preserveObjectStacking: true 
+        });
+
+        const frontImageInput = document.getElementById('frontImageInput');
+        const faceImageInput = document.getElementById('faceImageInput');
+        const downloadCanvasBtn = document.getElementById('downloadCanvas');
+        const clearCanvasBtn = document.getElementById('clearCanvas');
+        
+        let frontOverlayImage = null;
+
+        // Helper function to read file inputs
+        function handleImageUpload(e, callback) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                callback(event.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // 2. Handle Front PNG (Overlay) Upload
+        frontImageInput.addEventListener('change', function(e) {
+            handleImageUpload(e, function(imgUrl) {
+                fabric.Image.fromURL(imgUrl, function(img) {
+                    
+                    // Scale front overlay image to fit A4 canvas perfectly
+                    img.set({
+                        originX: 'left',
+                        originY: 'top',
+                        left: 0,
+                        top: 0,
+                        scaleX: canvas.width / img.width,
+                        scaleY: canvas.height / img.height,
+                        
+                        // Locks down overlay while mouse events pass cleanly underneath
+                        selectable: false,       
+                        evented: false,          
+                        hasControls: false,
+                        hasBorders: false
+                    });
+
+                    if (frontOverlayImage) {
+                        canvas.remove(frontOverlayImage);
+                    }
+
+                    frontOverlayImage = img;
+                    canvas.add(img);
+                    img.bringToFront(); 
+                    canvas.renderAll();
+
+                    // Enable face input and download feature
+                    faceImageInput.disabled = false;
+                    faceImageInput.parentElement.style.opacity = "1";
+                    downloadCanvasBtn.disabled = false;
+                });
+            });
+        });
+
+        // 3. Handle Face Image Upload (Goes behind the overlay)
+        faceImageInput.addEventListener('change', function(e) {
+            handleImageUpload(e, function(imgUrl) {
+                fabric.Image.fromURL(imgUrl, function(img) {
+                    
+                    // Scale face down so it initially fits within layout margins
+                    const scale = Math.min(canvas.width / img.width, canvas.height / img.height) * 0.6;
+
+                    img.set({
+                        left: canvas.width / 2,
+                        top: canvas.height / 2,
+                        originX: 'center',
+                        originY: 'center',
+                        scaleX: scale,
+                        scaleY: scale,
+
+                        // Active adjustment handles
+                        selectable: true,
+                        evented: true,
+                        hasControls: true,
+                        hasBorders: true,
+                        
+                        // Custom styling handles
+                        cornerColor: '#3498db',
+                        cornerSize: 14,
+                        transparentCorners: false,
+                        borderColor: '#3498db',
+                        cornerStyle: 'circle'
+                    });
+
+                    canvas.add(img);
+                    
+                    // Push the face image behind the overlay frame
+                    if (frontOverlayImage) {
+                        img.moveTo(canvas.getObjects().indexOf(frontOverlayImage) - 1);
+                        frontOverlayImage.bringToFront(); 
+                    }
+
+                    canvas.setActiveObject(img); 
+                    canvas.renderAll();
+                });
+            });
+        });
+
+        // 4. Handle Canvas Download as JPG
+        downloadCanvasBtn.addEventListener('click', function() {
+            // Deselect active object so transformation borders don't show up in final export
+            canvas.discardActiveObject();
+            canvas.requestRenderAll();
+
+            // Small timeout allows the selection box to completely disappear before capturing pixels
+            setTimeout(() => {
+                // Convert fabric canvas objects into a raw base64 data URL
+                const dataURL = canvas.toDataURL({
+                    format: 'jpeg',
+                    quality: 0.95 // High-quality image compression
+                });
+
+                // Generate a temporary browser anchor link to trigger download sequence
+                const downloadLink = document.createElement('a');
+                downloadLink.href = dataURL;
+                downloadLink.download = 'custom-a4-card.jpg';
+                
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+            }, 50);
+        });
+
+        // 5. Reset Button Action
+        clearCanvasBtn.addEventListener('click', function() {
+            canvas.clear();
+            canvas.setBackgroundColor('#ffffff', canvas.renderAll.bind(canvas));
+            frontOverlayImage = null;
+            
+            frontImageInput.value = '';
+            faceImageInput.value = '';
+            faceImageInput.disabled = true;
+            downloadCanvasBtn.disabled = true;
+        });
+    </script>
+</body>
+</html>
