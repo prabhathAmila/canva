@@ -4,6 +4,14 @@ const canvas = new fabric.Canvas('a4Canvas', {
     preserveObjectStacking: true 
 });
 
+// Configure global default styling for selection controls (Pixora Purple Branding)
+fabric.Object.prototype.transparentCorners = false;
+fabric.Object.prototype.cornerColor = '#8b3dff';
+fabric.Object.prototype.borderColor = '#8b3dff';
+fabric.Object.prototype.cornerSize = 12;
+fabric.Object.prototype.cornerStyle = 'circle';
+fabric.Object.prototype.borderScaleFactor = 1.5;
+
 // Layer Cycling via Ctrl+Click & Right-Click Selection
 canvas.on('mouse:down', function(options) {
     // 1. Right Click Selection Support
@@ -408,10 +416,10 @@ imageUploadInput.addEventListener('change', function(e) {
                 scaleY: scale,
                 selectable: true,
                 evented: true,
-                cornerColor: '#3498db',
+                cornerColor: '#8b3dff',
                 cornerSize: 12,
                 transparentCorners: false,
-                borderColor: '#3498db',
+                borderColor: '#8b3dff',
                 cornerStyle: 'circle',
                 perPixelTargetFind: true // Enable pixel-perfect selection for transparent areas
             });
@@ -457,10 +465,11 @@ addTextBtn.addEventListener('click', function() {
         underline: hasUnderline,
         linethrough: hasStrike,
         overline: hasOverline,
-        cornerColor: '#3498db',
+        cornerColor: '#8b3dff',
         cornerSize: 12,
         transparentCorners: false,
-        cornerStyle: 'circle'
+        cornerStyle: 'circle',
+        borderColor: '#8b3dff'
     });
 
     canvas.add(textItem);
@@ -1222,10 +1231,11 @@ function addTextToCanvas(text, size, weight) {
         underline: hasUnderline,
         linethrough: hasStrike,
         overline: hasOverline,
-        cornerColor: '#3498db',
+        cornerColor: '#8b3dff',
         cornerSize: 12,
         transparentCorners: false,
-        cornerStyle: 'circle'
+        cornerStyle: 'circle',
+        borderColor: '#8b3dff'
     });
 
     canvas.add(textItem);
@@ -1295,10 +1305,11 @@ function addShapeToCanvas(shapeType) {
         stroke: '#000000',
         strokeWidth: 0,
         opacity: 1,
-        cornerColor: '#3498db',
+        cornerColor: '#8b3dff',
         cornerSize: 12,
         transparentCorners: false,
         cornerStyle: 'circle',
+        borderColor: '#8b3dff',
         isShapeElement: true
     };
 
@@ -1516,8 +1527,8 @@ function toggleLockActiveObject() {
         // For text elements
         editable: !shouldLock,
         // Style feedback
-        borderColor: shouldLock ? '#e74c3c' : '#3498db',
-        cornerColor: shouldLock ? '#e74c3c' : '#3498db'
+        borderColor: shouldLock ? '#e74c3c' : '#8b3dff',
+        cornerColor: shouldLock ? '#e74c3c' : '#8b3dff'
     });
     
     // Refresh selection styling in Fabric.js
