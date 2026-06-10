@@ -795,7 +795,7 @@ downloadCanvasBtn.addEventListener('click', function() {
         const dataURL = canvas.toDataURL({ format: 'jpeg', quality: 0.95 });
         const downloadLink = document.createElement('a');
         downloadLink.href = dataURL;
-        downloadLink.download = 'custom-a4-card.jpg';
+        downloadLink.download = 'pixora-design.jpg';
         document.body.appendChild(downloadLink);
         downloadLink.click();
         document.body.removeChild(downloadLink);
