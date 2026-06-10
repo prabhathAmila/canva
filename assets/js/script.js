@@ -70,6 +70,7 @@ function showContextMenu(x, y) {
     const sendBackwardItem = document.getElementById('ctxSendBackward');
     const sendToBackItem = document.getElementById('ctxSendToBack');
     const deleteItem = document.getElementById('ctxDelete');
+    const duplicateItem = document.getElementById('ctxDuplicate');
     const toggleLockItem = document.getElementById('ctxToggleLock');
 
     if (isLocked) {
@@ -78,6 +79,7 @@ function showContextMenu(x, y) {
         sendBackwardItem.classList.add('disabled');
         sendToBackItem.classList.add('disabled');
         deleteItem.classList.add('disabled');
+        if (duplicateItem) duplicateItem.classList.add('disabled');
         toggleLockItem.innerHTML = '<i class="fa-solid fa-lock"></i> Unlock Layer';
     } else {
         bringToFrontItem.classList.remove('disabled');
@@ -85,6 +87,7 @@ function showContextMenu(x, y) {
         sendBackwardItem.classList.remove('disabled');
         sendToBackItem.classList.remove('disabled');
         deleteItem.classList.remove('disabled');
+        if (duplicateItem) duplicateItem.classList.remove('disabled');
         toggleLockItem.innerHTML = '<i class="fa-solid fa-lock-open"></i> Lock Layer';
     }
 
@@ -163,6 +166,10 @@ document.getElementById('ctxSendToBack').addEventListener('click', function() {
 });
 document.getElementById('ctxToggleLock').addEventListener('click', function() {
     toggleLockActiveObject();
+    hideContextMenu();
+});
+document.getElementById('ctxDuplicate').addEventListener('click', function() {
+    duplicateActiveObject();
     hideContextMenu();
 });
 document.getElementById('ctxDelete').addEventListener('click', function() {
@@ -248,6 +255,10 @@ const zoomOutBtn = document.getElementById('zoomOutBtn');
 const tbBtnLock = document.getElementById('tbBtnLock');
 const elBtnLock = document.getElementById('elBtnLock');
 const sidebarLockBtn = document.getElementById('sidebarLockBtn');
+
+// Canvas Duplicate Controls DOM
+const tbBtnDuplicate = document.getElementById('tbBtnDuplicate');
+const elBtnDuplicate = document.getElementById('elBtnDuplicate');
 
 function applyZoom(zoomValue) {
     const factor = zoomValue / 100;
@@ -483,12 +494,14 @@ function updateSidebarControlsFromCanvasSelection(e) {
     if (activeObj) {
         const isLocked = !!activeObj.isLocked;
 
-        // Toggle delete and layering controls depending on locked state
+        // Toggle delete, duplicate and layering controls depending on locked state
         deleteSelectedBtn.disabled = isLocked;
         bringToFrontBtn.disabled = isLocked;
         bringForwardBtn.disabled = isLocked;
         sendBackwardBtn.disabled = isLocked;
         sendToBackBtn.disabled = isLocked;
+        if (tbBtnDuplicate) tbBtnDuplicate.disabled = isLocked;
+        if (elBtnDuplicate) elBtnDuplicate.disabled = isLocked;
         
         // Update Sidebar Lock button state
         sidebarLockBtn.disabled = false;
@@ -729,6 +742,8 @@ canvas.on('selection:cleared', function() {
     bringForwardBtn.disabled = true;
     sendBackwardBtn.disabled = true;
     sendToBackBtn.disabled = true;
+    if (tbBtnDuplicate) tbBtnDuplicate.disabled = true;
+    if (elBtnDuplicate) elBtnDuplicate.disabled = true;
     textColorPicker.disabled = false;
     textColorHex.disabled = false;
     fontSizeInput.disabled = false;
@@ -757,6 +772,11 @@ window.addEventListener('keydown', function(e) {
     if (e.key === 'Delete' || e.key === 'Backspace') {
         if(document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'SELECT') {
             deleteActiveObject();
+        }
+    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd') {
+        if(document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'SELECT') {
+            e.preventDefault();
+            duplicateActiveObject();
         }
     }
 });
@@ -1512,6 +1532,39 @@ function toggleLockActiveObject() {
 tbBtnLock.addEventListener('click', toggleLockActiveObject);
 elBtnLock.addEventListener('click', toggleLockActiveObject);
 sidebarLockBtn.addEventListener('click', toggleLockActiveObject);
+
+function duplicateActiveObject() {
+    const activeObj = canvas.getActiveObject();
+    if (!activeObj || activeObj.isLocked) return;
+
+    activeObj.clone(function(clonedObj) {
+        canvas.discardActiveObject();
+        
+        clonedObj.set({
+            left: clonedObj.left + 20,
+            top: clonedObj.top + 20,
+            evented: true
+        });
+
+        if (clonedObj.type === 'activeSelection') {
+            clonedObj.canvas = canvas;
+            clonedObj.forEachObject(function(obj) {
+                canvas.add(obj);
+            });
+            clonedObj.setCoords();
+        } else {
+            canvas.add(clonedObj);
+        }
+
+        canvas.setActiveObject(clonedObj);
+        canvas.requestRenderAll();
+        updateSidebarControlsFromCanvasSelection();
+    }, ['isShapeElement']);
+}
+
+// Bind Duplicate Click Handlers
+if (tbBtnDuplicate) tbBtnDuplicate.addEventListener('click', duplicateActiveObject);
+if (elBtnDuplicate) elBtnDuplicate.addEventListener('click', duplicateActiveObject);
 
 // Initialize Zoom control state to 100% on start
 applyZoom(100);

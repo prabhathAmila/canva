@@ -360,6 +360,13 @@
 
             <div class="toolbar-divider"></div>
 
+            <!-- Duplicate Button -->
+            <div class="toolbar-item">
+                <button class="style-btn" id="tbBtnDuplicate" title="Duplicate Text" style="padding: 6px 8px; height: 32px; border-radius: 4px; font-size: 11px; width: 32px; min-width: 32px;"><i class="fa-solid fa-copy"></i></button>
+            </div>
+
+            <div class="toolbar-divider"></div>
+
             <!-- Lock Button -->
             <div class="toolbar-item">
                 <button class="style-btn" id="tbBtnLock" title="Lock Text" style="padding: 6px 8px; height: 32px; border-radius: 4px; font-size: 11px; width: 32px; min-width: 32px;"><i class="fa-solid fa-lock-open"></i></button>
@@ -408,6 +415,13 @@
                 <i class="fa-solid fa-pen-clip" style="font-size: 11px; color: #868e96;"></i>
                 <input type="color" id="elStrokeColorPicker" value="#000000" style="width: 24px; height: 24px; border-radius: 4px; border: 1px solid #ced4da; cursor: pointer;">
                 <input type="text" id="elStrokeColorHex" value="#000000" placeholder="#000" style="width: 65px; padding: 6px 6px; font-size: 12px; height: 32px; text-transform: uppercase; border-radius: 4px; outline: none; border: 1px solid #ced4da;">
+            </div>
+
+            <div class="toolbar-divider"></div>
+
+            <!-- Duplicate Button -->
+            <div class="toolbar-item">
+                <button class="style-btn" id="elBtnDuplicate" title="Duplicate Element" style="padding: 6px 8px; height: 32px; border-radius: 4px; font-size: 11px; width: 32px; min-width: 32px;"><i class="fa-solid fa-copy"></i></button>
             </div>
 
             <div class="toolbar-divider"></div>
@@ -471,6 +485,9 @@
             <i class="fa-solid fa-angles-down"></i> Send to Back
         </div>
         <div class="context-menu-divider"></div>
+        <div class="context-menu-item" id="ctxDuplicate">
+            <i class="fa-solid fa-copy"></i> Duplicate Layer
+        </div>
         <div class="context-menu-item" id="ctxToggleLock">
             <i class="fa-solid fa-lock-open"></i> Lock Layer
         </div>
