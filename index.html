@@ -14,62 +14,85 @@
 
     <!-- STARTUP CANVAS SIZE MODAL -->
     <div class="modal-overlay" id="sizeModal">
-        <div class="modal-card">
-            <h2>Define Canvas Size</h2>
-            <p>Select a preset workspace design format or enter custom dimensions in pixels.</p>
-            
-            <div class="preset-grid">
-                <div class="preset-item active" data-width="595" data-height="842">
-                    <i class="fa-solid fa-file-lines"></i>
-                    <div class="preset-details">
-                        <span class="preset-name">A4 Portrait</span>
-                        <span class="preset-dim">595 x 842 px</span>
+        <div class="modal-card split-modal" style="width: 880px; max-width: 95%; padding: 32px;">
+            <div class="modal-split-container" style="display: flex; gap: 28px; width: 100%;">
+                
+                <!-- LEFT COLUMN: SAVED TEMPLATES -->
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 12px; min-width: 0;">
+                    <h2 style="font-size: 18px; font-weight: 700; color: var(--text-dark); margin: 0; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-floppy-disk" style="color: #8b3dff; font-size: 18px;"></i> Saved Templates
+                    </h2>
+                    <p style="font-size: 12px; color: #5e6670; margin: 0;">Select one of your previously saved templates to load it directly.</p>
+                    <div class="templates-grid" id="modalTemplatesGrid" style="grid-template-columns: repeat(2, 1fr); gap: 12px; max-height: 420px; overflow-y: auto; padding: 4px; margin-top: 8px; border: 1px solid var(--border-color); border-radius: 8px; background: #f8f9fa;">
+                        <p style="font-size: 11px; color: #868e96; text-align: center; margin-top: 40px; width: 100%; grid-column: span 2;">No templates saved yet.</p>
                     </div>
                 </div>
-                <div class="preset-item" data-width="842" data-height="595">
-                    <i class="fa-solid fa-file-lines" style="transform: rotate(90deg);"></i>
-                    <div class="preset-details">
-                        <span class="preset-name">A4 Landscape</span>
-                        <span class="preset-dim">842 x 595 px</span>
+
+                <!-- VERTICAL DIVIDER -->
+                <div class="modal-split-divider" style="width: 1px; background-color: var(--border-color); align-self: stretch;"></div>
+
+                <!-- RIGHT COLUMN: DEFAULT SIZE & CUSTOM SIZE -->
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 12px; min-width: 0;">
+                    <h2 style="font-size: 18px; font-weight: 700; color: var(--text-dark); margin: 0; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-file-circle-plus" style="color: #8b3dff; font-size: 18px;"></i> Define Canvas Size
+                    </h2>
+                    <p style="font-size: 12px; color: #5e6670; margin: 0;">Select a preset workspace format or enter custom dimensions.</p>
+                    
+                    <div class="preset-grid" style="max-height: 240px; margin-top: 8px;">
+                        <div class="preset-item active" data-width="595" data-height="842">
+                            <i class="fa-solid fa-file-lines"></i>
+                            <div class="preset-details">
+                                <span class="preset-name">A4 Portrait</span>
+                                <span class="preset-dim">595 x 842 px</span>
+                            </div>
+                        </div>
+                        <div class="preset-item" data-width="842" data-height="595">
+                            <i class="fa-solid fa-file-lines" style="transform: rotate(90deg);"></i>
+                            <div class="preset-details">
+                                <span class="preset-name">A4 Landscape</span>
+                                <span class="preset-dim">842 x 595 px</span>
+                            </div>
+                        </div>
+                        <div class="preset-item" data-width="1080" data-height="1080">
+                            <i class="fa-solid fa-square"></i>
+                            <div class="preset-details">
+                                <span class="preset-name">Square Card</span>
+                                <span class="preset-dim">1080 x 1080 px</span>
+                            </div>
+                        </div>
+                        <div class="preset-item" data-width="600" data-height="900">
+                            <i class="fa-solid fa-address-card"></i>
+                            <div class="preset-details">
+                                <span class="preset-name">Standard Card</span>
+                                <span class="preset-dim">600 x 900 px</span>
+                            </div>
+                        </div>
+                        <div class="preset-item" data-width="1050" data-height="600">
+                            <i class="fa-solid fa-id-card"></i>
+                            <div class="preset-details">
+                                <span class="preset-name">Business Card</span>
+                                <span class="preset-dim">1050 x 600 px</span>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="preset-item" data-width="1080" data-height="1080">
-                    <i class="fa-solid fa-square"></i>
-                    <div class="preset-details">
-                        <span class="preset-name">Square Card</span>
-                        <span class="preset-dim">1080 x 1080 px</span>
+                    
+                    <div class="custom-size-container" style="margin-top: 4px;">
+                        <div class="custom-input-group">
+                            <label for="customWidthInput">Width (px)</label>
+                            <input type="number" id="customWidthInput" value="595" min="100" max="4000">
+                        </div>
+                        <div class="custom-input-group">
+                            <label for="customHeightInput">Height (px)</label>
+                            <input type="number" id="customHeightInput" value="842" min="100" max="4000">
+                        </div>
                     </div>
+                    
+                    <button class="btn btn-purple" id="createDesignBtn" style="margin-top: 8px; width: 100%;">
+                        Create Design
+                    </button>
                 </div>
-                <div class="preset-item" data-width="600" data-height="900">
-                    <i class="fa-solid fa-address-card"></i>
-                    <div class="preset-details">
-                        <span class="preset-name">Standard Card</span>
-                        <span class="preset-dim">600 x 900 px</span>
-                    </div>
-                </div>
-                <div class="preset-item" data-width="1050" data-height="600">
-                    <i class="fa-solid fa-id-card"></i>
-                    <div class="preset-details">
-                        <span class="preset-name">Business Card</span>
-                        <span class="preset-dim">1050 x 600 px</span>
-                    </div>
-                </div>
+
             </div>
-            
-            <div class="custom-size-container">
-                <div class="custom-input-group">
-                    <label for="customWidthInput">Width (px)</label>
-                    <input type="number" id="customWidthInput" value="595" min="100" max="4000">
-                </div>
-                <div class="custom-input-group">
-                    <label for="customHeightInput">Height (px)</label>
-                    <input type="number" id="customHeightInput" value="842" min="100" max="4000">
-                </div>
-            </div>
-            
-            <button class="btn btn-purple" id="createDesignBtn" style="margin-top: 8px;">
-                Create Design
-            </button>
         </div>
     </div>
 
@@ -88,12 +111,18 @@
                 </button>
                 <div class="dropdown-content" id="fileMenuContent">
                     <a href="#" id="menuNewDesignBtn"><i class="fa-solid fa-file-circle-plus" style="margin-right: 8px;"></i> New Design...</a>
+                    <a href="#" id="menuExportJsonBtn"><i class="fa-solid fa-floppy-disk" style="margin-right: 8px;"></i> Save Template...</a>
+                    <a href="#" id="menuImportJsonBtn"><i class="fa-solid fa-file-import" style="margin-right: 8px;"></i> Import JSON...</a>
                     <a href="#" id="clearCanvas" class="danger"><i class="fa-solid fa-arrow-rotate-left" style="margin-right: 8px;"></i> Reset Canvas</a>
                 </div>
             </div>
         </div>
         
-        <div class="top-bar-right">
+        <div class="top-bar-right" style="display: flex; gap: 8px;">
+            <!-- Save Template Button (triggers export and backend registration) -->
+            <button class="btn btn-success" id="exportJsonBtn" style="width: auto; padding: 8px 16px; height: 36px; font-size: 12px; margin-top: 0;">
+                <i class="fa-solid fa-floppy-disk"></i> Save Template
+            </button>
             <!-- Export / Download Button -->
             <button class="btn btn-purple" id="downloadCanvas" style="width: auto; padding: 8px 16px; height: 36px; font-size: 12px;">
                 <i class="fa-solid fa-cloud-arrow-up"></i> Export Image
@@ -106,11 +135,15 @@
 
         <!-- NARROW TAB STRIP -->
         <div class="tab-strip">
+            <div class="tab-item active" data-tab="templates" title="Templates">
+                <i class="fa-solid fa-cubes"></i>
+                <span>Templates</span>
+            </div>
             <div class="tab-item" data-tab="uploads" title="Uploads">
                 <i class="fa-solid fa-cloud-arrow-up"></i>
                 <span>Uploads</span>
             </div>
-            <div class="tab-item active" data-tab="text" title="Text">
+            <div class="tab-item" data-tab="text" title="Text">
                 <div class="text-tab-icon">T</div>
                 <span>Text</span>
             </div>
@@ -131,6 +164,17 @@
             <i class="fa-solid fa-chevron-left"></i>
         </button>
 
+        <!-- TEMPLATES PANEL -->
+        <div class="tab-panel active" id="panel-templates">
+            <div class="panel-header">Templates</div>
+            <div class="panel-content">
+                <div class="section-title">Your saved templates</div>
+                <div class="templates-grid" id="templatesGrid">
+                    <p style="font-size: 11px; color: #868e96; text-align: center; margin-top: 20px; width: 100%; grid-column: span 2;">No templates saved yet.</p>
+                </div>
+            </div>
+        </div>
+
         <!-- UPLOADS PANEL -->
         <div class="tab-panel" id="panel-uploads">
             <div class="panel-header">Uploads</div>
@@ -146,7 +190,7 @@
         </div>
 
         <!-- TEXT PANEL -->
-        <div class="tab-panel active" id="panel-text">
+        <div class="tab-panel" id="panel-text">
             <div class="panel-header">Text</div>
             <div class="panel-content">
                 <!-- Add Text Button (Big Purple Canva Style) -->
@@ -361,6 +405,15 @@
 
             <div class="toolbar-divider"></div>
 
+            <!-- Canvas Alignment Buttons -->
+            <div class="toolbar-item align-group" style="gap: 2px;">
+                <button class="style-btn" id="tbBtnCanvasAlignLeft" title="Align Left to Canvas" style="padding: 6px 8px; height: 32px; border-radius: 4px; font-size: 11px; width: 32px; min-width: 32px;"><i class="fa-solid fa-arrow-left"></i></button>
+                <button class="style-btn" id="tbBtnCanvasAlignCenter" title="Align Center to Canvas" style="padding: 6px 8px; height: 32px; border-radius: 4px; font-size: 11px; width: 32px; min-width: 32px;"><i class="fa-solid fa-arrows-left-right"></i></button>
+                <button class="style-btn" id="tbBtnCanvasAlignRight" title="Align Right to Canvas" style="padding: 6px 8px; height: 32px; border-radius: 4px; font-size: 11px; width: 32px; min-width: 32px;"><i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+
+            <div class="toolbar-divider"></div>
+
             <!-- Duplicate Button -->
             <div class="toolbar-item">
                 <button class="style-btn" id="tbBtnDuplicate" title="Duplicate Text" style="padding: 6px 8px; height: 32px; border-radius: 4px; font-size: 11px; width: 32px; min-width: 32px;"><i class="fa-solid fa-copy"></i></button>
@@ -418,6 +471,13 @@
                 <input type="text" id="elStrokeColorHex" value="#000000" placeholder="#000" style="width: 65px; padding: 6px 6px; font-size: 12px; height: 32px; text-transform: uppercase; border-radius: 4px; outline: none; border: 1px solid #ced4da;">
             </div>
 
+            <!-- Canvas Alignment Buttons -->
+            <div class="toolbar-item align-group" style="gap: 2px;">
+                <button class="style-btn" id="elBtnCanvasAlignLeft" title="Align Left to Canvas" style="padding: 6px 8px; height: 32px; border-radius: 4px; font-size: 11px; width: 32px; min-width: 32px;"><i class="fa-solid fa-arrow-left"></i></button>
+                <button class="style-btn" id="elBtnCanvasAlignCenter" title="Align Center to Canvas" style="padding: 6px 8px; height: 32px; border-radius: 4px; font-size: 11px; width: 32px; min-width: 32px;"><i class="fa-solid fa-arrows-left-right"></i></button>
+                <button class="style-btn" id="elBtnCanvasAlignRight" title="Align Right to Canvas" style="padding: 6px 8px; height: 32px; border-radius: 4px; font-size: 11px; width: 32px; min-width: 32px;"><i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+
             <div class="toolbar-divider"></div>
 
             <!-- Duplicate Button -->
@@ -452,6 +512,7 @@
 
     <!-- HIDDEN BACKING ELEMENTS FOR SIDEBAR COMPATIBILITY -->
     <div style="display: none;">
+        <input type="file" id="importJsonInput" accept=".json">
         <input type="text" id="textString" value="Edit Me!">
         <button class="btn" id="addTextBtn"></button>
         <select id="fontFamilySelect">

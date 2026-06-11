@@ -12,7 +12,230 @@ fabric.Object.prototype.cornerSize = 12;
 fabric.Object.prototype.cornerStyle = 'circle';
 fabric.Object.prototype.borderScaleFactor = 1.5;
 
-// Layer Cycling via Ctrl+Click & Right-Click Selection
+// Sleek Custom Toast Notification Helper
+function showToast(message, type = 'info', duration = 3000) {
+    let container = document.querySelector('.toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+
+    let iconClass = 'fa-solid fa-circle-info';
+    if (type === 'success') iconClass = 'fa-solid fa-circle-check';
+    else if (type === 'error') iconClass = 'fa-solid fa-circle-exclamation';
+    else if (type === 'warning') iconClass = 'fa-solid fa-triangle-exclamation';
+
+    toast.innerHTML = `
+        <span class="toast-icon"><i class="${iconClass}"></i></span>
+        <span class="toast-message">${message}</span>
+        <button class="toast-close-btn"><i class="fa-solid fa-xmark"></i></button>
+    `;
+
+    container.appendChild(toast);
+
+    const closeBtn = toast.querySelector('.toast-close-btn');
+    closeBtn.addEventListener('click', () => {
+        removeToast(toast);
+    });
+
+    setTimeout(() => {
+        removeToast(toast);
+    }, duration);
+
+    function removeToast(el) {
+        el.style.animation = 'toast-fade-out 0.25s ease forwards';
+        el.addEventListener('animationend', () => {
+            el.remove();
+            if (container.children.length === 0) {
+                container.remove();
+            }
+        });
+    }
+}
+
+// Sleek Custom Confirm Modal Helper
+function showConfirm(message) {
+    return new Promise((resolve) => {
+        const modalOverlay = document.createElement('div');
+        modalOverlay.className = 'confirm-overlay';
+        
+        modalOverlay.innerHTML = `
+            <div class="confirm-card">
+                <div class="confirm-header">
+                    <span class="confirm-title"><i class="fa-solid fa-circle-question"></i> Confirmation</span>
+                </div>
+                <div class="confirm-body">${message}</div>
+                <div class="confirm-footer">
+                    <button class="btn btn-secondary confirm-cancel-btn">Cancel</button>
+                    <button class="btn btn-purple confirm-ok-btn">OK</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modalOverlay);
+
+        const okBtn = modalOverlay.querySelector('.confirm-ok-btn');
+        const cancelBtn = modalOverlay.querySelector('.confirm-cancel-btn');
+
+        okBtn.addEventListener('click', () => {
+            closeModal(true);
+        });
+
+        cancelBtn.addEventListener('click', () => {
+            closeModal(false);
+        });
+
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) {
+                closeModal(false);
+            }
+        });
+
+        function closeModal(result) {
+            modalOverlay.style.animation = 'confirm-fade-out 0.2s ease forwards';
+            const card = modalOverlay.querySelector('.confirm-card');
+            if (card) {
+                card.style.animation = 'confirm-scale-out 0.2s ease forwards';
+            }
+            modalOverlay.addEventListener('animationend', () => {
+                modalOverlay.remove();
+                resolve(result);
+            });
+        }
+    });
+}
+
+// Helper to strip trailing timestamp if present (e.g. "My Design-1770000000000" -> "My Design")
+function getCleanName(name) {
+    if (!name) return "";
+    return name.replace(/-\d{10,15}$/, '');
+}
+
+// Sleek Custom Prompt Modal Helper for entering design name and displaying preview with timestamp
+function showSaveTemplatePrompt(defaultName = "My Card Design") {
+    return new Promise((resolve) => {
+        const modalOverlay = document.createElement('div');
+        modalOverlay.className = 'confirm-overlay';
+        
+        const timestamp = Date.now();
+        const getFilename = (name) => {
+            const sanitized = name.trim().replace(/[^a-zA-Z0-9\s-_]/g, '').replace(/\s+/g, '-');
+            return sanitized ? `${sanitized}-${timestamp}` : `${timestamp}`;
+        };
+
+        modalOverlay.innerHTML = `
+            <div class="confirm-card" style="width: 400px;">
+                <div class="confirm-header">
+                    <span class="confirm-title"><i class="fa-solid fa-file-export"></i> Save Template</span>
+                </div>
+                <div class="confirm-body" style="display: flex; flex-direction: column; gap: 10px;">
+                    <label style="font-size: 12px; color: #495057; font-weight: 500;">Design Name:</label>
+                    <input type="text" id="promptDesignName" value="${defaultName}" placeholder="Enter template name...">
+                    
+                    <div style="margin-top: 6px; padding: 10px; background: #f8f9fa; border-radius: 8px; border: 1px dashed #dee2e6; box-sizing: border-box;">
+                        <div style="font-size: 10px; color: #6c757d; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px;">Filename & Timestamp preview</div>
+                        <div id="promptFilenamePreview" style="font-size: 11px; color: #495057; word-break: break-all; font-family: monospace;">${getFilename(defaultName)}.json</div>
+                    </div>
+                </div>
+                <div class="confirm-footer">
+                    <button class="btn btn-secondary prompt-cancel-btn">Cancel</button>
+                    <button class="btn btn-purple prompt-save-btn">Save</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modalOverlay);
+
+        const input = modalOverlay.querySelector('#promptDesignName');
+        const preview = modalOverlay.querySelector('#promptFilenamePreview');
+        const saveBtn = modalOverlay.querySelector('.prompt-save-btn');
+        const cancelBtn = modalOverlay.querySelector('.prompt-cancel-btn');
+
+        // Focus & select input content
+        input.focus();
+        input.select();
+
+        const updatePreview = () => {
+            const name = input.value;
+            preview.textContent = `${getFilename(name)}.json`;
+            if (name.trim() === "") {
+                saveBtn.disabled = true;
+                saveBtn.style.opacity = 0.5;
+                saveBtn.style.cursor = 'not-allowed';
+            } else {
+                saveBtn.disabled = false;
+                saveBtn.style.opacity = 1;
+                saveBtn.style.cursor = 'pointer';
+            }
+        };
+
+        input.addEventListener('input', updatePreview);
+        updatePreview(); // Initial preview check
+
+        // Enter key triggers Save, Escape triggers Cancel
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !saveBtn.disabled) {
+                closeModal({ designName: input.value, timestamp });
+            } else if (e.key === 'Escape') {
+                closeModal(null);
+            }
+        });
+
+        saveBtn.addEventListener('click', () => {
+            closeModal({ designName: input.value, timestamp });
+        });
+
+        cancelBtn.addEventListener('click', () => {
+            closeModal(null);
+        });
+
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) {
+                closeModal(null);
+            }
+        });
+
+        function closeModal(result) {
+            modalOverlay.style.animation = 'confirm-fade-out 0.2s ease forwards';
+            const card = modalOverlay.querySelector('.confirm-card');
+            if (card) {
+                card.style.animation = 'confirm-scale-out 0.2s ease forwards';
+            }
+            modalOverlay.addEventListener('animationend', () => {
+                modalOverlay.remove();
+                resolve(result);
+            });
+        }
+    });
+}
+
+// Helper to resize base64 images to target width (110px) keeping aspect ratio
+function resizeThumbnail(dataUrl, callback) {
+    const img = new Image();
+    img.onload = function() {
+        const targetWidth = 110;
+        const ratio = img.height / img.width;
+        const targetHeight = Math.round(targetWidth * ratio);
+
+        const canvasTmp = document.createElement('canvas');
+        canvasTmp.width = targetWidth;
+        canvasTmp.height = targetHeight;
+
+        const ctx = canvasTmp.getContext('2d');
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+
+        ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+        const resizedDataUrl = canvasTmp.toDataURL('image/png');
+        callback(resizedDataUrl);
+    };
+    img.src = dataUrl;
+}
+
 canvas.on('mouse:down', function(options) {
     // 1. Right Click Selection Support
     if (options.e && (options.e.button === 2 || options.button === 3)) {
@@ -268,6 +491,14 @@ const sidebarLockBtn = document.getElementById('sidebarLockBtn');
 const tbBtnDuplicate = document.getElementById('tbBtnDuplicate');
 const elBtnDuplicate = document.getElementById('elBtnDuplicate');
 
+// Canvas Alignment Controls DOM
+const tbBtnCanvasAlignLeft = document.getElementById('tbBtnCanvasAlignLeft');
+const tbBtnCanvasAlignCenter = document.getElementById('tbBtnCanvasAlignCenter');
+const tbBtnCanvasAlignRight = document.getElementById('tbBtnCanvasAlignRight');
+const elBtnCanvasAlignLeft = document.getElementById('elBtnCanvasAlignLeft');
+const elBtnCanvasAlignCenter = document.getElementById('elBtnCanvasAlignCenter');
+const elBtnCanvasAlignRight = document.getElementById('elBtnCanvasAlignRight');
+
 function applyZoom(zoomValue) {
     const factor = zoomValue / 100;
     
@@ -283,6 +514,32 @@ function applyZoom(zoomValue) {
     canvasZoomVal.textContent = Math.round(zoomValue) + '%';
     
     canvas.renderAll();
+}
+
+// Fit canvas zoom scale to the workspace viewport boundaries
+function fitCanvasToViewport() {
+    const scrollArea = document.querySelector('.workspace-scroll-area');
+    if (!scrollArea) return;
+
+    // Detect mobile viewport
+    const isMobile = window.innerWidth <= 768;
+    const paddingTotal = isMobile ? 32 : 80;
+
+    const viewWidth = scrollArea.clientWidth - paddingTotal;
+    const viewHeight = scrollArea.clientHeight - paddingTotal;
+
+    if (viewWidth <= 0 || viewHeight <= 0) {
+        applyZoom(100);
+        return;
+    }
+
+    const scaleX = viewWidth / baseWidth;
+    const scaleY = viewHeight / baseHeight;
+    const fitScale = Math.min(scaleX, scaleY);
+
+    // Clamp fit zoom between zoom bounds (20% to 300%)
+    const fitZoom = Math.max(20, Math.min(300, Math.round(fitScale * 100)));
+    applyZoom(fitZoom);
 }
 
 // Bind Zoom Event Handlers
@@ -306,6 +563,13 @@ zoomOutBtn.addEventListener('click', function() {
         newVal = Math.max(20, newVal - 10);
     }
     applyZoom(newVal);
+});
+
+// Window resize handler with simple debounce
+let resizeTimeout;
+window.addEventListener('resize', function() {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(fitCanvasToViewport, 150);
 });
 
 // Size Modal Dynamic Selection & Resizing Hooks
@@ -333,18 +597,26 @@ createDesignBtn.addEventListener('click', function() {
     const height = parseInt(customHeightInput.value, 10);
     
     if (isNaN(width) || width < 100 || width > 4000) {
-        alert('Please enter a valid width between 100 and 4000 pixels.');
+        showToast('Please enter a valid width between 100 and 4000 pixels.', 'warning');
         return;
     }
     if (isNaN(height) || height < 100 || height > 4000) {
-        alert('Please enter a valid height between 100 and 4000 pixels.');
+        showToast('Please enter a valid height between 100 and 4000 pixels.', 'warning');
         return;
     }
     
-    // Set Fabric Canvas dimensions & reset zoom
+    // Clear canvas and reset background color
+    canvas.clear();
+    canvas.setBackgroundColor('#ffffff', canvas.renderAll.bind(canvas));
+    
+    // Hide toolbars
+    if (typeof textToolbar !== 'undefined' && textToolbar) textToolbar.classList.remove('visible');
+    if (typeof elementToolbar !== 'undefined' && elementToolbar) elementToolbar.classList.remove('visible');
+    
+    // Set Fabric Canvas dimensions & adjust fit zoom
     baseWidth = width;
     baseHeight = height;
-    applyZoom(100);
+    fitCanvasToViewport();
     
     // Hide startup size modal
     sizeModal.classList.add('hidden');
@@ -511,6 +783,14 @@ function updateSidebarControlsFromCanvasSelection(e) {
         sendToBackBtn.disabled = isLocked;
         if (tbBtnDuplicate) tbBtnDuplicate.disabled = isLocked;
         if (elBtnDuplicate) elBtnDuplicate.disabled = isLocked;
+        
+        // Canvas alignment controls locked state sync
+        if (tbBtnCanvasAlignLeft) tbBtnCanvasAlignLeft.disabled = isLocked;
+        if (tbBtnCanvasAlignCenter) tbBtnCanvasAlignCenter.disabled = isLocked;
+        if (tbBtnCanvasAlignRight) tbBtnCanvasAlignRight.disabled = isLocked;
+        if (elBtnCanvasAlignLeft) elBtnCanvasAlignLeft.disabled = isLocked;
+        if (elBtnCanvasAlignCenter) elBtnCanvasAlignCenter.disabled = isLocked;
+        if (elBtnCanvasAlignRight) elBtnCanvasAlignRight.disabled = isLocked;
         
         // Update Sidebar Lock button state
         sidebarLockBtn.disabled = false;
@@ -753,6 +1033,14 @@ canvas.on('selection:cleared', function() {
     sendToBackBtn.disabled = true;
     if (tbBtnDuplicate) tbBtnDuplicate.disabled = true;
     if (elBtnDuplicate) elBtnDuplicate.disabled = true;
+    
+    // Disable canvas alignment controls
+    if (tbBtnCanvasAlignLeft) tbBtnCanvasAlignLeft.disabled = true;
+    if (tbBtnCanvasAlignCenter) tbBtnCanvasAlignCenter.disabled = true;
+    if (tbBtnCanvasAlignRight) tbBtnCanvasAlignRight.disabled = true;
+    if (elBtnCanvasAlignLeft) elBtnCanvasAlignLeft.disabled = true;
+    if (elBtnCanvasAlignCenter) elBtnCanvasAlignCenter.disabled = true;
+    if (elBtnCanvasAlignRight) elBtnCanvasAlignRight.disabled = true;
     textColorPicker.disabled = false;
     textColorHex.disabled = false;
     fontSizeInput.disabled = false;
@@ -1573,9 +1861,418 @@ function duplicateActiveObject() {
     }, ['isShapeElement']);
 }
 
+// Align active element to canvas left, center, right
+function alignActiveObject(alignment) {
+    const activeObj = canvas.getActiveObject();
+    if (!activeObj || activeObj.isLocked) return;
+
+    // Get absolute bounding box of the active object (ignoring viewport scale/pan)
+    const rect = activeObj.getBoundingRect(true);
+    let diff = 0;
+
+    if (alignment === 'left') {
+        diff = -rect.left;
+    } else if (alignment === 'center') {
+        diff = (baseWidth / 2) - (rect.left + rect.width / 2);
+    } else if (alignment === 'right') {
+        diff = baseWidth - (rect.left + rect.width);
+    }
+
+    activeObj.set({
+        left: activeObj.left + diff
+    });
+    activeObj.setCoords();
+    canvas.requestRenderAll();
+    canvas.fire('object:modified', { target: activeObj });
+}
+
 // Bind Duplicate Click Handlers
 if (tbBtnDuplicate) tbBtnDuplicate.addEventListener('click', duplicateActiveObject);
 if (elBtnDuplicate) elBtnDuplicate.addEventListener('click', duplicateActiveObject);
 
-// Initialize Zoom control state to 100% on start
-applyZoom(100);
+// Bind Canvas Alignment Click Handlers
+if (tbBtnCanvasAlignLeft) tbBtnCanvasAlignLeft.addEventListener('click', function(e) { e.preventDefault(); alignActiveObject('left'); });
+if (tbBtnCanvasAlignCenter) tbBtnCanvasAlignCenter.addEventListener('click', function(e) { e.preventDefault(); alignActiveObject('center'); });
+if (tbBtnCanvasAlignRight) tbBtnCanvasAlignRight.addEventListener('click', function(e) { e.preventDefault(); alignActiveObject('right'); });
+if (elBtnCanvasAlignLeft) elBtnCanvasAlignLeft.addEventListener('click', function(e) { e.preventDefault(); alignActiveObject('left'); });
+if (elBtnCanvasAlignCenter) elBtnCanvasAlignCenter.addEventListener('click', function(e) { e.preventDefault(); alignActiveObject('center'); });
+if (elBtnCanvasAlignRight) elBtnCanvasAlignRight.addEventListener('click', function(e) { e.preventDefault(); alignActiveObject('right'); });
+
+// Initialize Zoom control state to fit the viewport on start
+fitCanvasToViewport();
+
+// --- TEMPLATES SAVE & LOAD ENGINE ---
+const API_BASE = window.location.protocol.startsWith('file') ? 'http://localhost:3000' : '';
+
+function loadTemplatesList() {
+    // Try to fetch templates.json as a static relative file first (works on any static host or Live Server)
+    fetch('assets/templates/templates.json')
+    .then(response => {
+        if (!response.ok) throw new Error("Static templates.json fetch failed");
+        return response.json();
+    })
+    .then(templates => {
+        renderTemplatesGrid(templates, false);
+    })
+    .catch(err => {
+        console.warn("Could not fetch templates.json relatively, falling back to local server URL...", err);
+        // Fallback: fetch directly from local Node server templates file
+        fetch('http://localhost:3000/assets/templates/templates.json')
+        .then(response => {
+            if (!response.ok) throw new Error("Node server templates fetch failed");
+            return response.json();
+        })
+        .then(templates => {
+            renderTemplatesGrid(templates, true);
+        })
+        .catch(e => {
+            console.error("Failed to load templates list from both relative and server sources:", e);
+            renderTemplatesGrid([], false);
+        });
+    });
+}
+
+function renderTemplatesGrid(templates, useServerBase) {
+    const grid = document.getElementById('templatesGrid');
+    const modalGrid = document.getElementById('modalTemplatesGrid');
+
+    if (grid) {
+        populateGrid(grid, templates, useServerBase, 2);
+    }
+    if (modalGrid) {
+        populateGrid(modalGrid, templates, useServerBase, 2);
+    }
+}
+
+function populateGrid(grid, templates, useServerBase, spanCount) {
+    if (templates.length === 0) {
+        grid.innerHTML = `<p style="font-size: 11px; color: #868e96; text-align: center; margin-top: 20px; width: 100%; grid-column: span ${spanCount};">No templates saved yet.</p>`;
+        return;
+    }
+
+    grid.innerHTML = '';
+
+    templates.forEach(tpl => {
+        const cleanName = getCleanName(tpl.name);
+        const card = document.createElement('div');
+        card.className = 'template-card';
+        card.title = `Load template: ${cleanName}`;
+
+        const img = document.createElement('img');
+        let thumbUrl = tpl.thumbnail;
+        if (thumbUrl && !thumbUrl.startsWith('data:') && !thumbUrl.startsWith('http')) {
+            const base = useServerBase ? 'http://localhost:3000' : '';
+            if (thumbUrl.startsWith('/')) {
+                thumbUrl = base + thumbUrl;
+            } else {
+                thumbUrl = base + '/' + thumbUrl;
+            }
+        }
+        img.src = thumbUrl;
+        img.alt = cleanName;
+
+        const info = document.createElement('div');
+        info.className = 'template-card-info';
+        info.textContent = cleanName;
+
+        card.appendChild(img);
+        card.appendChild(info);
+
+        card.addEventListener('click', () => {
+            loadTemplateIntoCanvas(tpl, useServerBase);
+        });
+
+        grid.appendChild(card);
+    });
+}
+
+function loadTemplateIntoCanvas(tpl, useServerBase) {
+    const cleanName = getCleanName(tpl.name);
+    showConfirm(`Are you sure you want to load template "${cleanName}"? This will discard your current canvas.`).then(confirmLoad => {
+        if (!confirmLoad) return;
+
+        const applyCanvasData = (canvasData) => {
+            canvas.clear();
+            
+            textToolbar.classList.remove('visible');
+            elementToolbar.classList.remove('visible');
+
+            const parsedData = typeof canvasData === 'string' ? JSON.parse(canvasData) : canvasData;
+            const canvasObjects = parsedData.canvas ? parsedData.canvas : parsedData;
+            
+            // Update base dimensions using metadata from file if available, falling back to tpl or defaults
+            baseWidth = parsedData.width || tpl.width || 595;
+            baseHeight = parsedData.height || tpl.height || 842;
+
+            canvas.loadFromJSON(canvasObjects, () => {
+                // Enforce isLocked flags and control constraints when importing objects back
+                canvas.getObjects().forEach(obj => {
+                    if (obj.isLocked) {
+                        obj.set({
+                            lockMovementX: true,
+                            lockMovementY: true,
+                            lockScalingX: true,
+                            lockScalingY: true,
+                            lockRotation: true,
+                            lockScalingFlip: true,
+                            lockSkewingX: true,
+                            lockSkewingY: true,
+                            hasControls: false,
+                            editable: false,
+                            borderColor: '#e74c3c',
+                            cornerColor: '#e74c3c'
+                        });
+                    } else {
+                        obj.set({
+                            cornerColor: '#8b3dff',
+                            borderColor: '#8b3dff',
+                            cornerSize: 12,
+                            transparentCorners: false,
+                            cornerStyle: 'circle'
+                        });
+                    }
+                });
+
+                canvas.renderAll();
+                fitCanvasToViewport();
+                updateSidebarControlsFromCanvasSelection();
+
+                // Close start dialog
+                sizeModal.classList.add('hidden');
+                showToast(`Template "${cleanName}" loaded successfully!`, 'success');
+            });
+        };
+
+        if (tpl.source) {
+            let fetchUrl = tpl.source;
+            if (!fetchUrl.startsWith('/') && !fetchUrl.startsWith('http')) {
+                fetchUrl = '/' + fetchUrl;
+            }
+            if (!fetchUrl.startsWith('http')) {
+                const base = useServerBase ? 'http://localhost:3000' : '';
+                fetchUrl = base + fetchUrl;
+            }
+
+            fetch(fetchUrl)
+            .then(response => {
+                if (!response.ok) throw new Error("Could not download template JSON source.");
+                return response.json();
+            })
+            .then(canvasData => {
+                applyCanvasData(canvasData);
+            })
+            .catch(err => {
+                console.error("Error loading template from server:", err);
+                showToast("Failed to load template from server: " + err.message, 'error');
+            });
+        } else {
+            applyCanvasData(tpl.canvas);
+        }
+    });
+}
+
+// Load templates on launch
+loadTemplatesList();
+
+// --- ARTWORK JSON EXPORT & IMPORT SYSTEM ---
+const exportJsonBtn = document.getElementById('exportJsonBtn');
+const menuExportJsonBtn = document.getElementById('menuExportJsonBtn');
+const menuImportJsonBtn = document.getElementById('menuImportJsonBtn');
+const importJsonInput = document.getElementById('importJsonInput');
+
+if (exportJsonBtn) {
+    exportJsonBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        exportArtworkJson();
+    });
+}
+
+if (menuExportJsonBtn) {
+    menuExportJsonBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        exportArtworkJson();
+    });
+}
+
+if (menuImportJsonBtn && importJsonInput) {
+    menuImportJsonBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        importJsonInput.click();
+    });
+
+    importJsonInput.addEventListener('change', handleImportJson);
+}
+
+function exportArtworkJson() {
+    showSaveTemplatePrompt("My Card Design").then(result => {
+        if (!result) return;
+        const { designName, timestamp } = result;
+
+        // Sanitize design name to create a safe filename
+        const sanitizedName = designName.trim().replace(/[^a-zA-Z0-9\s-_]/g, '').replace(/\s+/g, '-');
+        const baseFilename = `${sanitizedName}-${timestamp}`;
+
+        canvas.discardActiveObject();
+        canvas.requestRenderAll();
+
+        const currentZoom = parseInt(canvasZoomSlider.value, 10);
+        
+        // Scale to 100% to capture clean thumbnail
+        applyZoom(100);
+
+        setTimeout(() => {
+            const fullSizeThumbnail = canvas.toDataURL({ format: 'png', quality: 0.9 });
+            
+            // Restore previous zoom
+            applyZoom(currentZoom);
+
+            resizeThumbnail(fullSizeThumbnail, (resizedThumbnailData) => {
+                const customProps = [
+                    'isShapeElement', 'isLocked', 'lockMovementX', 'lockMovementY', 
+                    'lockScalingX', 'lockScalingY', 'lockRotation', 'lockScalingFlip', 
+                    'lockSkewingX', 'lockSkewingY', 'hasControls', 'editable', 
+                    'borderColor', 'cornerColor'
+                ];
+                const canvasJson = canvas.toJSON(customProps);
+
+                const artworkData = {
+                    name: `${designName.trim()}-${timestamp}`,
+                    version: "1.0",
+                    width: baseWidth,
+                    height: baseHeight,
+                    canvas: canvasJson
+                };
+
+                // 1. Download JSON file
+                const jsonString = JSON.stringify(artworkData, null, 2);
+                const jsonBlob = new Blob([jsonString], { type: "application/json" });
+                const jsonUrl = URL.createObjectURL(jsonBlob);
+
+                const jsonLink = document.createElement('a');
+                jsonLink.href = jsonUrl;
+                jsonLink.download = baseFilename + '.json';
+                document.body.appendChild(jsonLink);
+                jsonLink.click();
+                document.body.removeChild(jsonLink);
+                URL.revokeObjectURL(jsonUrl);
+
+                // 2. Download Thumbnail Image (PNG) - resized to 110px width!
+                const imgLink = document.createElement('a');
+                imgLink.href = resizedThumbnailData;
+                imgLink.download = baseFilename + '.png';
+                document.body.appendChild(imgLink);
+                imgLink.click();
+                document.body.removeChild(imgLink);
+
+                // 3. Auto-Register as a server Template
+                const payload = {
+                    id: timestamp,
+                    name: `${designName.trim()}-${timestamp}`,
+                    filename: baseFilename,
+                    width: baseWidth,
+                    height: baseHeight,
+                    canvas: canvasJson,
+                    thumbnail: resizedThumbnailData
+                };
+
+                fetch(API_BASE + '/api/save-template', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error("API Offline");
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Automatically added exported artwork as a template on the server.");
+                    loadTemplatesList();
+                })
+                .catch(err => {
+                    console.error("Server offline. Could not register exported template on server:", err);
+                });
+            });
+        }, 50);
+    });
+}
+
+
+function handleImportJson(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(event) {
+        try {
+            const data = JSON.parse(event.target.result);
+            if (!data.canvas) {
+                showToast("Invalid file format. The file is not a valid Pixora Design JSON file.", 'error');
+                return;
+            }
+
+            showConfirm("Are you sure you want to load this JSON design? Your current canvas will be overwritten.").then(confirmImport => {
+                if (!confirmImport) {
+                    e.target.value = '';
+                    return;
+                }
+
+                canvas.clear();
+
+                // Set size
+                baseWidth = data.width || 595;
+                baseHeight = data.height || 842;
+
+                textToolbar.classList.remove('visible');
+                elementToolbar.classList.remove('visible');
+
+                const canvasData = typeof data.canvas === 'string' ? JSON.parse(data.canvas) : data.canvas;
+
+                canvas.loadFromJSON(canvasData, () => {
+                    canvas.getObjects().forEach(obj => {
+                        if (obj.isLocked) {
+                            obj.set({
+                                lockMovementX: true,
+                                lockMovementY: true,
+                                lockScalingX: true,
+                                lockScalingY: true,
+                                lockRotation: true,
+                                lockScalingFlip: true,
+                                lockSkewingX: true,
+                                lockSkewingY: true,
+                                hasControls: false,
+                                editable: false,
+                                borderColor: '#e74c3c',
+                                cornerColor: '#e74c3c'
+                            });
+                        } else {
+                            obj.set({
+                                cornerColor: '#8b3dff',
+                                borderColor: '#8b3dff',
+                                cornerSize: 12,
+                                transparentCorners: false,
+                                cornerStyle: 'circle'
+                            });
+                        }
+                    });
+
+                    canvas.renderAll();
+                    fitCanvasToViewport();
+                    updateSidebarControlsFromCanvasSelection();
+
+                    // Close start dialog modal
+                    sizeModal.classList.add('hidden');
+
+                    showToast("Design loaded successfully!", 'success');
+                });
+            });
+
+        } catch (err) {
+            console.error("JSON parsing error:", err);
+            showToast("Failed to parse JSON design: " + err.message, 'error');
+        }
+
+        // Reset file input so same file can be reloaded
+        e.target.value = '';
+    };
+    reader.readAsText(file);
+}

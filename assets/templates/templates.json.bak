@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1770000000000,
+    "name": "Pixora Default Design",
+    "width": 595,
+    "height": 842,
+    "thumbnail": "assets/templates/thumbs/pixora-artwork.png",
+    "source": "assets/templates/pixora-artwork.json"
+  },
+  {
+    "id": 1770000000001,
+    "name": "Pixora Alternative Layout",
+    "width": 595,
+    "height": 842,
+    "thumbnail": "assets/templates/thumbs/pixora-artwork.png",
+    "source": "assets/templates/pixora-artwork.json"
+  }
+]

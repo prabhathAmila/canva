@@ -1,0 +1,82 @@
+[
+  {
+    "id": 1781160996598,
+    "name": "My Card Design-1781160996598",
+    "width": 595,
+    "height": 842,
+    "thumbnail": "assets/templates/thumbs/1781160996598.png",
+    "source": "assets/templates/1781160996598.json"
+  },
+  {
+    "id": 1781160961278,
+    "name": "My Card Design-1781160961278",
+    "width": 595,
+    "height": 842,
+    "thumbnail": "assets/templates/thumbs/1781160961278.png",
+    "source": "assets/templates/1781160961278.json"
+  },
+  {
+    "id": 1781160634782,
+    "name": "My Card Design-1781160634782",
+    "width": 595,
+    "height": 842,
+    "thumbnail": "assets/templates/thumbs/1781160634782.png",
+    "source": "assets/templates/1781160634782.json"
+  },
+  {
+    "id": 1781159163685,
+    "name": "Export-1781159163685",
+    "width": 595,
+    "height": 842,
+    "thumbnail": "assets/templates/thumbs/1781159163685.png",
+    "source": "assets/templates/1781159163685.json"
+  },
+  {
+    "id": 1781159134254,
+    "name": "Export-1781159134254",
+    "width": 595,
+    "height": 842,
+    "thumbnail": "assets/templates/thumbs/1781159134254.png",
+    "source": "assets/templates/1781159134254.json"
+  },
+  {
+    "id": 1781157857245,
+    "name": "Export-1781157857245",
+    "width": 1748,
+    "height": 2480,
+    "thumbnail": "assets/templates/thumbs/1781157857245.png",
+    "source": "assets/templates/1781157857245.json"
+  },
+  {
+    "id": 1781157673822,
+    "name": "Export-1781157673822",
+    "width": 1748,
+    "height": 2480,
+    "thumbnail": "assets/templates/thumbs/1781157673822.png",
+    "source": "assets/templates/1781157673822.json"
+  },
+  {
+    "id": 1781157469902,
+    "name": "Export-1781157469902",
+    "width": 595,
+    "height": 842,
+    "thumbnail": "assets/templates/thumbs/1781157469902.png",
+    "source": "assets/templates/1781157469902.json"
+  },
+  {
+    "id": 1770000000000,
+    "name": "Pixora Default Design",
+    "width": 595,
+    "height": 842,
+    "thumbnail": "assets/templates/thumbs/pixora-artwork.png",
+    "source": "assets/templates/pixora-artwork.json"
+  },
+  {
+    "id": 1781156597414,
+    "name": "Pixora Alternative Layout",
+    "width": 595,
+    "height": 842,
+    "thumbnail": "assets/templates/thumbs/1781156597414.png",
+    "source": "assets/templates/1781156597414.json"
+  }
+]
